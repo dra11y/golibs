@@ -6,9 +6,11 @@ package log
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -192,6 +194,17 @@ func goroutineID() uint64 {
 	return n
 }
 
+func slogLevel(l string) slog.Level {
+	switch l {
+	case "error", "fatal", "panic":
+		return slog.LevelError
+	case "debug":
+		return slog.LevelDebug
+	default:
+		return slog.LevelInfo
+	}
+}
+
 // Construct a log message and write it
 // TIME PID#GOID [LEVEL] FUNCNAME(): TEXT
 func writeLog(levelStr, funcName, format string, args ...any) {
@@ -208,7 +221,11 @@ func writeLog(levelStr, funcName, format string, args ...any) {
 	}
 
 	buf.WriteString(fmt.Sprintf(format, args...))
-	log.Println(buf.String())
+
+	sl := slogLevel(levelStr)
+	slog.Default().Log(context.Background(), sl, buf.String())
+
+	// log.Println(buf.String())
 }
 
 // StdLog returns a Go standard library logger that writes everything to logs
