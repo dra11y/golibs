@@ -1,4 +1,4 @@
-module github.com/AdguardTeam/golibs
+module github.com/dra11y/golibs
 
 go 1.21.8
 
